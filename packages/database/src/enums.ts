@@ -14,4 +14,5 @@ export enum Collection {
   PLAN = "PLAN",
   SUBSCRIPTION = "SUBSCRIPTION",
   PAYMENT = "PAYMENT",
+  LLM = "LLM",
 }

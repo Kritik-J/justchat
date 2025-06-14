@@ -10,6 +10,7 @@ export * from "./interfaces/message";
 export * from "./interfaces/plan";
 export * from "./interfaces/subscription";
 export * from "./interfaces/payment";
+export * from "./interfaces/llm";
 
 // Schemas and models
 export * from "./schemas/user";
@@ -20,6 +21,7 @@ export * from "./schemas/message";
 export * from "./schemas/plan";
 export * from "./schemas/subscription";
 export * from "./schemas/payment";
+export * from "./schemas/llm";
 
 // Client
 export * from "./client";

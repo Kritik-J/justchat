@@ -10,6 +10,7 @@ import { PlanModel } from "./schemas/plan";
 import { SubscriptionModel } from "./schemas/subscription";
 import { PaymentModel } from "./schemas/payment";
 import { Collection } from "./enums";
+import { LLMModel } from "./schemas/llm";
 
 const MODEL_MAP = {
   [Collection.USER]: UserModel,
@@ -20,6 +21,7 @@ const MODEL_MAP = {
   [Collection.PLAN]: PlanModel,
   [Collection.SUBSCRIPTION]: SubscriptionModel,
   [Collection.PAYMENT]: PaymentModel,
+  [Collection.LLM]: LLMModel,
 };
 
 export class MongoRepository {
