@@ -1,0 +1,42 @@
+{
+  "name": "webapp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.710.0",
+    "@aws-sdk/s3-request-presigner": "^3.710.0",
+    "@hookform/resolvers": "^5.0.1",
+    "@justchat/database": "workspace:*",
+    "@justchat/email": "workspace:*",
+    "@justchat/logger": "workspace:*",
+    "@justchat/ui": "workspace:*",
+    "@react-router/fs-routes": "^7.6.2",
+    "@react-router/node": "^7.6.2",
+    "@react-router/serve": "^7.6.2",
+    "isbot": "^5.1.27",
+    "nodemailer": "^6.10.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.54.2",
+    "react-router": "^7.6.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^7.6.2",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/node": "^20",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
