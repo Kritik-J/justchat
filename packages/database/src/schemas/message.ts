@@ -6,11 +6,10 @@ import commonSchema from "./common";
 // Message Schema
 const messageSchema = new Schema<IMessage>({
   thread: { type: Schema.Types.ObjectId, ref: "Thread", required: true },
-
-  // TODO: Design the schema
-  // 1. Role -> user | assistant
-  // 2. Content -> Stringify JSON object
-  // 3. Metadata -> object
+  role: { type: String, required: true },
+  content: { type: String, required: true },
+  model_name: { type: String, required: true },
+  metadata: { type: Object, default: {} },
 });
 
 messageSchema.add(commonSchema);
