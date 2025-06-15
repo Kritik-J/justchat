@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ChatMessage from "../ChatMessage";
+import { useLoaderData } from "react-router";
 
-export default function ChatList() {
+interface Message {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+}
+
+export default function ChatList({ messages }: { messages: any }) {
   return (
     <div className="flex flex-col gap-2">
-      {MESSAGES.map((message) => (
+      {messages.documents.map((message: any) => (
         <ChatMessage key={message.id} message={message} />
       ))}
     </div>

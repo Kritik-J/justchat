@@ -7,10 +7,10 @@ export interface IMessage extends Document, TimeStamps {
   role: string;
   content: string;
   model_name: string;
-  metadata: {
-    token_count: number;
-    processing_time: number;
-    cost: number;
-    retry_count: number;
-  };
+  // metadata: {
+  //   token_count: number;
+  //   processing_time: number;
+  //   cost: number;
+  //   retry_count: number;
+  // };
 }

@@ -41,4 +41,4 @@ class ThreadService {
   }
 }
 
-export const kbService = new ThreadService();
+export const threadService = new ThreadService();

@@ -9,7 +9,7 @@ const messageSchema = new Schema<IMessage>({
   role: { type: String, required: true },
   content: { type: String, required: true },
   model_name: { type: String, required: true },
-  metadata: { type: Object, default: {} },
+  // metadata: { type: Object, default: {} },
 });
 
 messageSchema.add(commonSchema);

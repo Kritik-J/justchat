@@ -12,9 +12,9 @@ export function meta({}: Route.MetaArgs) {
 export default function Page() {
   return (
     <div className="p-4 h-full w-full grid grid-rows-[1fr_auto]">
-      <ChatList />
+      <ChatList messages={[]} />
 
-      <ChatInput />
+      <ChatInput onNewMessages={() => {}} />
     </div>
   );
 }

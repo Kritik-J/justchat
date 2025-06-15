@@ -7,6 +7,7 @@ const EnvironmentSchema = z.object({
   EMAIL_PASS: z.string(),
   MONGO_URI: z.string(),
   APP_URL: z.string(),
+  OPENAI_API_KEY: z.string(),
 });
 
 export type Environment = z.infer<typeof EnvironmentSchema>;
