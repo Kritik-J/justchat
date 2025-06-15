@@ -13,4 +13,5 @@ export interface IThread extends Document, TimeStamps {
     system_prompt: string;
   };
   metadata: Record<string, any>;
+  guestSessionId?: string;
 }

@@ -1,84 +1,132 @@
-# Turborepo starter
+# JustChat Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team.
+This is the monorepo for the JustChat project, managed with [Turborepo](https://turbo.build/) and [pnpm workspaces](https://pnpm.io/workspaces). It contains all applications, shared packages, and infrastructure code for the project.
 
-## Using this example
+---
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## Monorepo Structure
 
 ```
-cd my-turborepo
-pnpm build
+.
+├── apps/
+│   ├── webapp/      # Main frontend application (React, Vite)
+│   └── sam/         # AWS SAM templates and scripts for infrastructure
+├── packages/
+│   ├── database/    # Database layer (Mongoose, TypeScript interfaces, repository)
+│   ├── ui/          # Shared React UI components, hooks, and styles
+│   ├── logger/      # Centralized logging utility (pino)
+│   ├── email/       # Email templates/components (React)
+│   ├── eslint-config/ # Shared ESLint configuration
+│   └── tsconfig/    # Shared TypeScript configuration
+├── turbo.json       # Turborepo pipeline configuration
+├── pnpm-workspace.yaml # pnpm workspace configuration
+└── ...
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+## Apps
 
-```
-cd my-turborepo
-pnpm dev
-```
+### `apps/webapp`
 
-### Remote Caching
+- Main frontend application built with React and Vite.
+- Uses internal packages for database access, UI components, and logging.
+- Organized into routes, components, providers, services, and utilities.
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### `apps/sam`
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+- Contains AWS SAM (Serverless Application Model) templates and scripts.
+- Used for deploying infrastructure (e.g., S3, SQS) via CloudFormation YAML templates.
+- Includes automation scripts for deployment.
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+---
 
-```
-cd my-turborepo
-npx turbo login
-```
+## Packages
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### `packages/database`
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+- Implements the data layer using Mongoose (MongoDB).
+- Provides TypeScript interfaces, Mongoose schemas/models, a generic repository, and a DB client.
+- Centralizes all data access logic for the project.
 
-```
-npx turbo link
-```
+### `packages/ui`
 
-## Useful Links
+- Shared React UI components, hooks, icons, and styles.
+- Promotes design consistency and code reuse across frontends.
 
-Learn more about the power of Turborepo:
+### `packages/logger`
 
-- [Tasks](https://turbo.build/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/docs/reference/command-line-reference)
+- Exports a simple logger using `pino` for consistent logging across the codebase.
+
+### `packages/email`
+
+- Contains email templates (React components) and email-related utilities.
+- Example: Magic Link authentication email, with shared header/footer components.
+
+### `packages/eslint-config`
+
+- Centralized linting rules for all packages and apps.
+
+### `packages/tsconfig`
+
+- Centralized TypeScript configuration presets for different use cases (Next.js, React library, base).
+
+---
+
+## Development Workflow
+
+- **Install dependencies:**
+  ```sh
+  pnpm install
+  ```
+- **Build all apps and packages:**
+  ```sh
+  pnpm build
+  ```
+- **Develop (watch mode) all apps and packages:**
+  ```sh
+  pnpm dev
+  ```
+- **Lint all code:**
+  ```sh
+  pnpm lint
+  ```
+- **Typecheck all code:**
+  ```sh
+  pnpm typecheck
+  ```
+
+---
+
+## How Everything Connects
+
+- The **webapp** imports from `@justchat/database` for data access, `@justchat/logger` for logging, and `@justchat/ui` for UI components.
+- The **database** package provides a robust, type-safe, and reusable way to interact with MongoDB.
+- The **email** package provides ready-to-use email templates for user communication.
+- The **sam** app is used for deploying backend infrastructure (e.g., queues, storage) needed by your app.
+
+---
+
+## Contributing
+
+1. Fork the repo and create your branch from `main`.
+2. Make your changes and add tests if applicable.
+3. Run lint and typecheck before pushing:
+   ```sh
+   pnpm lint && pnpm typecheck
+   ```
+4. Open a pull request.
+
+---
+
+## Notes
+
+- This monorepo is designed for scalability, code reuse, and developer productivity.
+- All packages and apps are written in TypeScript.
+- Infrastructure is managed as code (AWS SAM).
+
+---
+
+## License
+
+This project is for internal reference and development. License details to be added as needed.

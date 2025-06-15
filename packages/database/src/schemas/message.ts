@@ -10,6 +10,7 @@ const messageSchema = new Schema<IMessage>({
   content: { type: String, required: true },
   model_name: { type: String, required: true },
   metadata: { type: Object, default: {} },
+  guestSessionId: { type: String, required: false },
 });
 
 messageSchema.add(commonSchema);
