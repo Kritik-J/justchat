@@ -9,12 +9,21 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "JustChat" }, { name: "description", content: "JustChat" }];
 }
 
-type Message = { id: string; content: string; role: "user" | "assistant" };
+type Message = {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+  _id?: string;
+};
 
 export async function loader({ request }: { request: Request }) {
   const session = await getUserSession(request);
   const userId = session.get("userId") as string | undefined;
   return { userId };
+}
+
+function isValidObjectId(id: string) {
+  return typeof id === "string" && /^[a-f\d]{24}$/i.test(id);
 }
 
 export default function Page() {
@@ -102,21 +111,91 @@ export default function Page() {
       }
     }
 
-    // Optionally, replace the "streaming" id with a real id after completion
+    const assistantMsgId = response.headers.get("X-Assistant-Message-Id");
+
     setMessages((msgs) =>
       msgs.map((msg) =>
-        msg.id === "streaming" ? { ...msg, id: Date.now().toString() } : msg
+        msg.id === "streaming"
+          ? {
+              ...msg,
+              id:
+                assistantMsgId && isValidObjectId(assistantMsgId)
+                  ? assistantMsgId
+                  : Date.now().toString(),
+              _id:
+                assistantMsgId && isValidObjectId(assistantMsgId)
+                  ? assistantMsgId
+                  : undefined,
+            }
+          : msg
       )
     );
+  };
+
+  const handleRetry = async (aiMessageIndex: number, model: string) => {
+    const userMessage = messages[aiMessageIndex - 1];
+    const aiMessage = messages[aiMessageIndex];
+    if (!userMessage || userMessage.role !== "user" || !threadId) return;
+
+    setMessages((msgs) =>
+      msgs.map((msg, idx) =>
+        idx === aiMessageIndex
+          ? { ...msg, id: "streaming", content: "", role: "assistant" }
+          : msg
+      )
+    );
+
+    let aiContent = "";
+    const response = await fetch("/chat/stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        threadId,
+        model,
+        userId: userId || undefined,
+        content: userMessage.content,
+        guestSessionId: userId ? undefined : guestSessionId,
+        assistantMsgId: aiMessage._id,
+      }),
+    });
+
+    if (!response.body) return;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      if (value) {
+        const chunk = decoder.decode(value, { stream: true });
+        aiContent += chunk;
+        setMessages((msgs) =>
+          msgs.map((msg, idx) =>
+            idx === aiMessageIndex ? { ...msg, content: aiContent } : msg
+          )
+        );
+      }
+    }
+
+    const assistantMsgId = response.headers.get("X-Assistant-Message-Id");
+
+    if (assistantMsgId && isValidObjectId(assistantMsgId)) {
+      setMessages((msgs) =>
+        msgs.map((msg, idx) =>
+          idx === aiMessageIndex
+            ? { ...msg, id: assistantMsgId, _id: assistantMsgId }
+            : msg
+        )
+      );
+    }
   };
 
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
-        <ChatList
-          messages={messages}
-          onRetry={async (messageIndex, model) => {}}
-        />
+        <ChatList messages={messages} onRetry={handleRetry} />
       </div>
 
       <div className="sticky bottom-0 w-full z-10 p-4">
