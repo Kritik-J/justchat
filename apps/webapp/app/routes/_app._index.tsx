@@ -118,7 +118,8 @@ export default function Page() {
           onRetry={async (messageIndex, model) => {}}
         />
       </div>
-      <div className="sticky bottom-3 w-full bg-background z-10 p-4">
+
+      <div className="sticky bottom-0 w-full z-10 p-4">
         <ChatInput onSend={handleSend} />
       </div>
     </div>
