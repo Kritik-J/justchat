@@ -11,7 +11,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const threadId = params.id;
   if (!threadId) throw new Response("Thread ID required", { status: 400 });
 
-  // Optionally, get userId for guest session support
   const session = await getUserSession(request);
   const userId = session.get("userId") as string | undefined;
   let guestSessionId: string | undefined = undefined;
@@ -34,6 +33,10 @@ type Message = {
   role: "user" | "assistant";
   createdAt: string;
 };
+
+function isValidObjectId(id: string) {
+  return typeof id === "string" && /^[a-f\d]{24}$/i.test(id);
+}
 
 export default function Page() {
   const {
@@ -132,9 +135,9 @@ export default function Page() {
     );
 
     let aiContent = "";
-    // ...fetch/stream logic (same as in handleSend, but use the right user message and model)...
     // For example, get the user message before the AI message:
     const userMessage = messages[aiMessageIndex - 1];
+    const aiMessage = messages[aiMessageIndex];
     if (!userMessage || userMessage.role !== "user") return;
 
     const response = await fetch("/chat/stream", {
@@ -146,6 +149,10 @@ export default function Page() {
         userId: userId || undefined,
         content: userMessage.content,
         guestSessionId: userId ? undefined : guestSessionId,
+        assistantMsgId:
+          aiMessage && aiMessage._id !== "streaming"
+            ? aiMessage._id
+            : undefined,
       }),
     });
 
@@ -169,9 +176,13 @@ export default function Page() {
       }
     }
 
+    const assistantMsgId = response.headers.get("X-Assistant-Message-Id");
+
     setMessages((msgs) =>
       msgs.map((msg, idx) =>
-        idx === aiMessageIndex ? { ...msg, id: Date.now().toString() } : msg
+        idx === aiMessageIndex && isValidObjectId(assistantMsgId || "")
+          ? { ...msg, id: assistantMsgId! }
+          : msg
       )
     );
   };
