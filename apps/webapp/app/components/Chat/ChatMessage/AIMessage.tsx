@@ -90,7 +90,7 @@ export default function AIMessage({
   return (
     <div className="flex flex-col w-full justify-start p-4 gap-2">
       <div className="flex items-center gap-2">
-        <Avatar className="rounded-sm">
+        <Avatar>
           <AvatarImage src="https://github.com/Kritik-J.png" />
           <AvatarFallback>K</AvatarFallback>
         </Avatar>
@@ -123,14 +123,10 @@ export default function AIMessage({
         >
           {message.content}
         </ReactMarkdown>
-        <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity items-center">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            onClick={handleCopy}
-            className="bg-background/80 backdrop-blur-sm"
-          >
-            <CopyIcon className="size-4" />
+
+        <div className="flex gap-2 items-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button variant="ghost" size="icon-sm" onClick={handleCopy}>
+            <CopyIcon className="size-3" />
           </Button>
           {showModelSelect ? (
             <div className="flex gap-2 bg-background/80 backdrop-blur-sm p-1 rounded-md">
@@ -149,14 +145,13 @@ export default function AIMessage({
             </div>
           ) : (
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon-sm"
               onClick={() => setShowModelSelect(true)}
               disabled={isRetrying}
-              className="bg-background/80 backdrop-blur-sm"
             >
               <RefreshCwIcon
-                className={`size-4 ${isRetrying ? "animate-spin" : ""}`}
+                className={`size-3 ${isRetrying ? "animate-spin" : ""}`}
               />
             </Button>
           )}
