@@ -6,6 +6,7 @@ export interface IMessage extends Document, TimeStamps {
   thread: Schema.Types.ObjectId | IThread;
   role: string;
   content: string;
+  guestSessionId?: string;
   model_name: string;
   metadata: {
     token_count: number;

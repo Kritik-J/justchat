@@ -1,5 +1,10 @@
 import crypto from "crypto";
-import { UserRole, type IUser } from "@justchat/database";
+import {
+  MessageModel,
+  ThreadModel,
+  UserRole,
+  type IUser,
+} from "@justchat/database";
 
 import { userService } from "./db/user.server";
 import { verificationService } from "./db/verification.server";
@@ -130,6 +135,22 @@ class AuthService {
     }
 
     return user;
+  }
+
+  async syncGuestChatsToUser(guestSessionId: string, userId: string) {
+    if (!guestSessionId || !userId) return;
+
+    // Update messages
+    await MessageModel.updateMany(
+      { guestSessionId },
+      { $set: { user: userId }, $unset: { guestSessionId: "" } }
+    );
+
+    // Update threads (if you store guestSessionId on threads)
+    await ThreadModel.updateMany(
+      { guestSessionId },
+      { $set: { user: userId }, $unset: { guestSessionId: "" } }
+    );
   }
 }
 

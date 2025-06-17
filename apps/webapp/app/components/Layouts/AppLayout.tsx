@@ -3,12 +3,15 @@ import AppSidebar from "./App/AppSidebar";
 import { SidebarProvider } from "@justchat/ui/components/sidebar";
 import AppHeader from "./App/AppHeader";
 
-export default function AppLayout() {
+export default function AppLayout({
+  threads,
+}: {
+  threads: { _id: string; title?: string }[];
+}) {
   return (
     <SidebarProvider>
-      <AppSidebar />
-
-      <main className="grid grid-rows-[auto_1fr] w-screen h-screen overflow-hidden">
+      <AppSidebar threads={threads} />
+      <main className="grid grid-rows-[auto_1fr] w-full h-screen">
         <AppHeader />
 
         <Outlet />

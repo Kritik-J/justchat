@@ -16,30 +16,38 @@ import { EllipsisIcon } from "@justchat/ui/icons";
 import Upgrade from "./Upgrade";
 import { Link } from "react-router";
 
-export default function AppSidebar() {
+// Thread type
+type Thread = {
+  _id: string;
+  title?: string;
+};
+
+export default function AppSidebar({ threads }: { threads: Thread[] }) {
   return (
     <Sidebar className="!border-r-0">
       <SidebarHeader className="items-center justify-between flex-row h-12">
         <Link to="/">
           <img src="/logos/quest.svg" alt="Quest" className="h-7 w-7" />
         </Link>
-
         <SidebarTrigger />
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Chats</SidebarGroupLabel>
-
           <SidebarGroupContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {Array.from({ length: 10 }).map((_, index) => (
-                  <SidebarMenuItem key={index}>
+                {threads.length === 0 && (
+                  <div className="p-2 text-muted-foreground text-sm">
+                    No chats yet
+                  </div>
+                )}
+                {threads.map((thread) => (
+                  <SidebarMenuItem key={thread._id}>
                     <SidebarMenuButton asChild>
-                      <Link to={`/chat/${index + 1}`}>
-                        <span>Chat {index + 1}</span>
-
+                      <Link to={`/chat/${thread._id}`}>
+                        <span>{thread.title || "New Chat"}</span>
                         <SidebarMenuAction showOnHover>
                           <EllipsisIcon className="size-4" />
                         </SidebarMenuAction>

@@ -15,9 +15,8 @@ const chatSchema = new Schema<IThread>({
     system_prompt: { type: String, default: "" },
   },
   metadata: { type: Object, default: {} },
+  guestSessionId: { type: String, required: false },
 });
-
-chatSchema.index({ user: 1 }, { unique: true }); // Unique index for user
 
 chatSchema.add(commonSchema);
 chatSchema.plugin(mongoosePaginate);
