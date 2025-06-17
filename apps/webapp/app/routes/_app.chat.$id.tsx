@@ -5,6 +5,7 @@ import ChatList from "~/components/Chat/ChatList";
 import ChatInput from "~/components/Chat/ChatInput";
 import { getUserSession } from "~/services/sessionStorage.server";
 import type { LoaderFunctionArgs } from "react-router";
+import { useChat } from "~/contexts/chat";
 
 // Loader to fetch messages for the thread
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -51,6 +52,7 @@ export default function Page() {
     guestSessionId?: string;
   };
 
+  const { updateThread } = useChat();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
 
   // Sync messages state with loader data when threadId changes
@@ -108,24 +110,36 @@ export default function Page() {
         aiContent += chunk;
         setMessages((msgs) =>
           msgs.map((msg) =>
-            msg._id === "streaming" ? { ...msg, content: aiContent } : msg
+            msg.id === "streaming" ? { ...msg, content: aiContent } : msg
           )
         );
       }
     }
 
+    // Update thread title with first message if it's a new thread
+    if (messages.length === 0) {
+      updateThread(threadId, { title: content.slice(0, 40) || "New Chat" });
+    }
+
     // Optionally, replace the "streaming" id with a real id after completion
-    setMessages((msgs) =>
-      msgs.map((msg) =>
-        msg._id === "streaming"
-          ? { ...msg, _id: Date.now().toString(), id: Date.now().toString() }
-          : msg
-      )
-    );
+    const assistantMsgId = response.headers.get("X-Assistant-Message-Id");
+    if (assistantMsgId && isValidObjectId(assistantMsgId)) {
+      setMessages((msgs) =>
+        msgs.map((msg) =>
+          msg.id === "streaming"
+            ? { ...msg, _id: assistantMsgId, id: assistantMsgId }
+            : msg
+        )
+      );
+    }
   };
 
   // Add retry handler
   const handleRetry = async (aiMessageIndex: number, model: string) => {
+    const userMessage = messages[aiMessageIndex - 1];
+    const aiMessage = messages[aiMessageIndex];
+    if (!userMessage || userMessage.role !== "user") return;
+
     setMessages((msgs) =>
       msgs.map((msg, idx) =>
         idx === aiMessageIndex
@@ -135,11 +149,6 @@ export default function Page() {
     );
 
     let aiContent = "";
-    // For example, get the user message before the AI message:
-    const userMessage = messages[aiMessageIndex - 1];
-    const aiMessage = messages[aiMessageIndex];
-    if (!userMessage || userMessage.role !== "user") return;
-
     const response = await fetch("/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -178,13 +187,15 @@ export default function Page() {
 
     const assistantMsgId = response.headers.get("X-Assistant-Message-Id");
 
-    setMessages((msgs) =>
-      msgs.map((msg, idx) =>
-        idx === aiMessageIndex && isValidObjectId(assistantMsgId || "")
-          ? { ...msg, id: assistantMsgId! }
-          : msg
-      )
-    );
+    if (assistantMsgId && isValidObjectId(assistantMsgId)) {
+      setMessages((msgs) =>
+        msgs.map((msg, idx) =>
+          idx === aiMessageIndex
+            ? { ...msg, id: assistantMsgId, _id: assistantMsgId }
+            : msg
+        )
+      );
+    }
   };
 
   return (

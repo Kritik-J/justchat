@@ -27,8 +27,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 export default function Layout({ loaderData }: Route.ComponentProps) {
   return (
-    <ChatProvider models={loaderData.models}>
-      <AppLayout threads={loaderData.threads} />
+    <ChatProvider
+      models={loaderData.models}
+      initialThreads={loaderData.threads}
+    >
+      <AppLayout />
     </ChatProvider>
   );
 }
