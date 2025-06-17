@@ -113,7 +113,10 @@ export default function Page() {
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
-        <ChatList messages={messages} />
+        <ChatList
+          messages={messages}
+          onRetry={async (messageIndex, model) => {}}
+        />
       </div>
       <div className="sticky bottom-3 w-full bg-background z-10 p-4">
         <ChatInput onSend={handleSend} />

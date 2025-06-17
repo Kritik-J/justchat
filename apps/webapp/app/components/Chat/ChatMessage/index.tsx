@@ -7,12 +7,13 @@ interface ChatMessageProps {
     content: string;
     role: "user" | "assistant";
   };
+  onRetry: (model: string) => Promise<void>;
 }
 
-export default function ChatMessage({ message }: ChatMessageProps) {
+export default function ChatMessage({ message, onRetry }: ChatMessageProps) {
   if (message.role === "user") {
     return <UserMessage message={message} />;
   }
 
-  return <AIMessage message={message} />;
+  return <AIMessage message={message} onRetry={onRetry} />;
 }

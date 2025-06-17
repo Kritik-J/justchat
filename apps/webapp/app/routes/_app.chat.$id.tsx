@@ -121,10 +121,65 @@ export default function Page() {
     );
   };
 
+  // Add retry handler
+  const handleRetry = async (aiMessageIndex: number, model: string) => {
+    setMessages((msgs) =>
+      msgs.map((msg, idx) =>
+        idx === aiMessageIndex
+          ? { ...msg, id: "streaming", content: "", role: "assistant" }
+          : msg
+      )
+    );
+
+    let aiContent = "";
+    // ...fetch/stream logic (same as in handleSend, but use the right user message and model)...
+    // For example, get the user message before the AI message:
+    const userMessage = messages[aiMessageIndex - 1];
+    if (!userMessage || userMessage.role !== "user") return;
+
+    const response = await fetch("/chat/stream", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        threadId,
+        model,
+        userId: userId || undefined,
+        content: userMessage.content,
+        guestSessionId: userId ? undefined : guestSessionId,
+      }),
+    });
+
+    if (!response.body) return;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let done = false;
+
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+      if (value) {
+        const chunk = decoder.decode(value, { stream: true });
+        aiContent += chunk;
+        setMessages((msgs) =>
+          msgs.map((msg, idx) =>
+            idx === aiMessageIndex ? { ...msg, content: aiContent } : msg
+          )
+        );
+      }
+    }
+
+    setMessages((msgs) =>
+      msgs.map((msg, idx) =>
+        idx === aiMessageIndex ? { ...msg, id: Date.now().toString() } : msg
+      )
+    );
+  };
+
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
-        <ChatList messages={messages} />
+        <ChatList messages={messages} onRetry={handleRetry} />
       </div>
       <div className="sticky bottom-3 w-full bg-background z-10 p-4">
         <ChatInput onSend={handleSend} />

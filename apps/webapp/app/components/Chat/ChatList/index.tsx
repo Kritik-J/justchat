@@ -7,7 +7,12 @@ interface Message {
   role: "user" | "assistant";
 }
 
-export default function ChatList({ messages }: { messages: Message[] }) {
+interface ChatListProps {
+  messages: Message[];
+  onRetry: (messageIndex: number, model: string) => Promise<void>;
+}
+
+export default function ChatList({ messages, onRetry }: ChatListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
@@ -27,7 +32,10 @@ export default function ChatList({ messages }: { messages: Message[] }) {
           key={message.id}
           ref={idx === messages.length - 1 ? lastMessageRef : undefined}
         >
-          <ChatMessage message={message} />
+          <ChatMessage
+            message={message}
+            onRetry={(model) => onRetry(idx, model)}
+          />
         </div>
       ))}
     </div>

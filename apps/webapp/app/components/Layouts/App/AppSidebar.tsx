@@ -12,7 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuAction,
 } from "@justchat/ui/components/sidebar";
-import { EllipsisIcon } from "@justchat/ui/icons";
+import { EllipsisIcon, PlusIcon } from "@justchat/ui/icons";
 import Upgrade from "./Upgrade";
 import { Link } from "react-router";
 
@@ -34,6 +34,15 @@ export default function AppSidebar({ threads }: { threads: Thread[] }) {
 
       <SidebarContent>
         <SidebarGroup>
+          <div className="px-2 mb-2">
+            <Link
+              to="/"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              <PlusIcon className="size-4" />
+              New Chat
+            </Link>
+          </div>
           <SidebarGroupLabel>Chats</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarGroupContent>
