@@ -1,8 +1,9 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources";
+import { env } from "~/env.server";
 
 const groqClient = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
 });
 
