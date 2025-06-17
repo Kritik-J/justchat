@@ -4,6 +4,7 @@ import type { Route } from "./+types/_app._index";
 import ChatList from "~/components/Chat/ChatList";
 import { useLoaderData } from "react-router";
 import { getUserSession } from "~/services/sessionStorage.server";
+import { useChat } from "~/contexts/chat";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "JustChat" }, { name: "description", content: "JustChat" }];
@@ -28,6 +29,7 @@ function isValidObjectId(id: string) {
 
 export default function Page() {
   const { userId } = useLoaderData() as { userId?: string };
+  const { addThread } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -75,6 +77,14 @@ export default function Page() {
       const data = await res.json();
       currentThreadId = data.threadId;
       setThreadId(currentThreadId);
+
+      // Add the new thread to context
+      if (currentThreadId) {
+        addThread({
+          _id: currentThreadId,
+          title: content.slice(0, 40) || "New Chat",
+        });
+      }
     }
 
     // Stream assistant response
@@ -198,7 +208,7 @@ export default function Page() {
         <ChatList messages={messages} onRetry={handleRetry} />
       </div>
 
-      <div className="sticky bottom-0 w-full z-10 p-4">
+      <div className="sticky bottom-0 bg-background w-full z-10 p-4">
         <ChatInput onSend={handleSend} />
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
 import { EllipsisIcon, PlusIcon } from "@justchat/ui/icons";
 import Upgrade from "./Upgrade";
 import { Link } from "react-router";
+import { useChat } from "~/contexts/chat";
 
 // Thread type
 type Thread = {
@@ -22,7 +23,9 @@ type Thread = {
   title?: string;
 };
 
-export default function AppSidebar({ threads }: { threads: Thread[] }) {
+export default function AppSidebar() {
+  const { threads } = useChat();
+
   return (
     <Sidebar className="!border-r-0">
       <SidebarHeader className="items-center justify-between flex-row h-12">
