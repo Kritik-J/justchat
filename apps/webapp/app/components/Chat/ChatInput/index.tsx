@@ -40,18 +40,6 @@ export default function ChatInput({
 
   return (
     <div className="h-full w-full flex flex-col gap-2 border border-border rounded-md p-2 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
-      <Select value={selectedModel} onValueChange={setSelectedModel}>
-        <SelectTrigger className="w-full mb-2">
-          <SelectValue placeholder="Select a model" />
-        </SelectTrigger>
-        <SelectContent>
-          {models.map((model) => (
-            <SelectItem key={model.id} value={model.id}>
-              {model.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
       <textarea
         className="w-full h-full resize-none text-sm border-none outline-none"
         placeholder="Ask me anything..."
@@ -59,7 +47,21 @@ export default function ChatInput({
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
       />
+
       <div className="flex items-center justify-between">
+        <Select value={selectedModel} onValueChange={setSelectedModel}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a model" />
+          </SelectTrigger>
+          <SelectContent>
+            {models.map((model) => (
+              <SelectItem key={model.id} value={model.id}>
+                {model.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon-sm">
             <Paperclip className="size-4" />
