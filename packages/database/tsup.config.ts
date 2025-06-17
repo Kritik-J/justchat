@@ -6,6 +6,7 @@ export const options: Options = {
   minify: true,
   dts: true,
   bundle: true,
+  sourcemap: false,
 };
 
 export default defineConfig(options);
