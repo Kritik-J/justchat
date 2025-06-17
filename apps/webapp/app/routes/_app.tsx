@@ -1,25 +1,34 @@
+import type { Route } from "./+types/_app";
+
 import AppLayout from "~/components/Layouts/AppLayout";
 import { chatService } from "~/services/chat.server";
-import { getUserSession } from "~/services/sessionStorage.server";
-import { useLoaderData } from "react-router";
 import type { LoaderFunctionArgs } from "react-router";
+import { ChatProvider } from "~/contexts/chat";
+import { authService } from "~/services/auth.server";
+import { llmService } from "~/services/db/llm.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getUserSession(request);
-  const userId = session.get("userId") as string | undefined;
+  const user = await authService.getUser(request);
+
   let threads: { _id: string; title?: string }[] = [];
-  if (userId) {
-    const rawThreads = await chatService.listThreads(userId);
+
+  if (user) {
+    const rawThreads = await chatService.listThreads(user._id);
+
     threads = rawThreads.map((t: any) => ({
       _id: t._id.toString(),
       title: t.title,
     }));
   }
-  return { threads };
+
+  const models = await llmService.findAll();
+
+  return { threads, models: models.documents };
 }
-export default function Layout() {
-  const { threads } = useLoaderData() as {
-    threads: { _id: string; title?: string }[];
-  };
-  return <AppLayout threads={threads} />;
+export default function Layout({ loaderData }: Route.ComponentProps) {
+  return (
+    <ChatProvider models={loaderData.models}>
+      <AppLayout threads={loaderData.threads} />
+    </ChatProvider>
+  );
 }
