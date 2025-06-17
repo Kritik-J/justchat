@@ -16,7 +16,7 @@ import { LogOutIcon, PackageIcon, SettingsIcon } from "@justchat/ui/icons";
 export default function AppHeader() {
   const { open, isMobile } = useSidebar();
   return (
-    <div className="h-12 flex items-center justify-between w-full px-4 bg-background">
+    <div className="h-12 flex items-center justify-between inset-x-0 px-4 bg-background sticky top-0 z-10">
       <div>{(!open || isMobile) && <SidebarTrigger />}</div>
 
       <div>
