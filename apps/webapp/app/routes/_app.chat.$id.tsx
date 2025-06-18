@@ -52,7 +52,7 @@ export default function Page() {
     guestSessionId?: string;
   };
 
-  const { updateThread } = useChat();
+  const { updateThread, models } = useChat();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
 
   // Sync messages state with loader data when threadId changes
@@ -197,14 +197,13 @@ export default function Page() {
       );
     }
   };
-
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
         <ChatList messages={messages} onRetry={handleRetry} />
       </div>
       <div className="sticky bottom-0 w-full bg-background z-10 p-4">
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleSend} models={models} />
       </div>
     </div>
   );

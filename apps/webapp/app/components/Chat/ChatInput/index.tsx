@@ -1,27 +1,17 @@
 import { useState } from "react";
 import { Button } from "@justchat/ui/components/button";
 import { Paperclip, SendIcon } from "@justchat/ui/icons";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@justchat/ui/components/select";
-
-const models = [
-  { id: "gemma2-9b-it", label: "Gemma 2 9B (Google)" },
-  { id: "meta-llama/llama-guard-4-12b", label: "Llama Guard 4 12B (Meta)" },
-  { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile (Meta)" },
-  { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant (Meta)" },
-];
+import type { ILLM } from "@justchat/database";
 
 export default function ChatInput({
   onSend,
+  models,
 }: {
   onSend: (input: string, model: string) => void;
+  models: ILLM[];
 }) {
-  const [selectedModel, setSelectedModel] = useState(models[0].id);
+  const [selectedModel, setSelectedModel] = useState("gpt-4o");
+
   const [input, setInput] = useState("");
 
   const handleSend = () => {
@@ -49,18 +39,23 @@ export default function ChatInput({
       />
 
       <div className="flex items-center justify-between">
-        <Select value={selectedModel} onValueChange={setSelectedModel}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a model" />
-          </SelectTrigger>
-          <SelectContent>
-            {models.map((model) => (
-              <SelectItem key={model.id} value={model.id}>
-                {model.label}
-              </SelectItem>
+        {models.length > 0 && (
+          <select
+            className="border border-border bg-background text-foreground rounded-md px-3 py-2 text-sm shadow-xs outline-none focus:border-ring focus:ring-2 focus:ring-ring/50 transition-colors duration-150 min-w-[12rem] hover:bg-accent/30"
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+          >
+            {models.map((model, index) => (
+              <option
+                key={index}
+                value={model.model_name}
+                className="bg-background text-foreground"
+              >
+                {model.name}
+              </option>
             ))}
-          </SelectContent>
-        </Select>
+          </select>
+        )}
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon-sm">

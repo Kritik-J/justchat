@@ -29,7 +29,7 @@ function isValidObjectId(id: string) {
 
 export default function Page() {
   const { userId } = useLoaderData() as { userId?: string };
-  const { addThread } = useChat();
+  const { addThread, models } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -209,7 +209,7 @@ export default function Page() {
       </div>
 
       <div className="sticky bottom-0 bg-background w-full z-10 p-4">
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleSend} models={models} />
       </div>
     </div>
   );
