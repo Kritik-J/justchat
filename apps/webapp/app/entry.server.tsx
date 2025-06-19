@@ -37,9 +37,17 @@ export default async function (
     loadContext,
     { nonce }
   );
-  response.headers.set(
-    "Content-Security-Policy",
-    `script-src 'nonce-${nonce}'`
-  );
+  if (process.env.NODE_ENV === "production") {
+    response.headers.set(
+      "Content-Security-Policy",
+      `script-src 'nonce-${nonce}'`
+    );
+  } else {
+    // Allow Vite dev server and inline scripts in development
+    response.headers.set(
+      "Content-Security-Policy",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5173"
+    );
+  }
   return response;
 }
