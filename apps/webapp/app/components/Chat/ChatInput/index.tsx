@@ -35,10 +35,6 @@ export default function ChatInput({
     }
   };
 
-  useEffect(() => {
-    console.log("input changed:", input);
-  }, [input]);
-
   return (
     <div className="h-full w-full flex flex-col gap-2 border border-border rounded-md p-2 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]">
       <textarea

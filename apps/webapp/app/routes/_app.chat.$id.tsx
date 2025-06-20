@@ -6,11 +6,16 @@ import ChatInput from "~/components/Chat/ChatInput";
 import { getUserSession } from "~/services/sessionStorage.server";
 import type { LoaderFunctionArgs } from "react-router";
 import { useChat } from "~/contexts/chat";
+import { redirect, useNavigate, useLocation } from "react-router";
 
-// Loader to fetch messages for the thread
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const threadId = params.id;
   if (!threadId) throw new Response("Thread ID required", { status: 400 });
+
+  const thread = await chatService.getThread(threadId);
+  if (!thread) {
+    throw redirect("/");
+  }
 
   const session = await getUserSession(request);
   const userId = session.get("userId") as string | undefined;
@@ -52,17 +57,34 @@ export default function Page() {
     guestSessionId?: string;
   };
 
-  const { updateThread, models } = useChat();
+  const { updateThread, models, threads } = useChat();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Sync messages state with loader data when threadId changes
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages, threadId]);
 
-  // Handler to send a message and stream the response
+  // Redirect if thread is deleted
+  useEffect(() => {
+    if (!threads.some((t) => t._id === threadId)) {
+      navigate("/", { replace: true });
+    }
+  }, [threads, threadId, navigate]);
+
+  // Handle the initial message passed from the homepage
+  useEffect(() => {
+    const initialMessage = location.state?.initialMessage;
+    if (initialMessage && initialMessages.length === 0) {
+      handleSend(initialMessage.content, initialMessage.model);
+      // Clear the state to prevent re-sending on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, initialMessages.length]);
+
   const handleSend = async (content: string, model: string) => {
-    // Add user message
     const userMsg: Message = {
       _id: Date.now().toString(),
       id: Date.now().toString(),

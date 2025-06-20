@@ -29,7 +29,7 @@ function isValidObjectId(id: string) {
 
 export default function Page() {
   const { userId } = useLoaderData() as { userId?: string };
-  const { addThread, models } = useChat();
+  const { addThread, models, threads } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -45,13 +45,18 @@ export default function Page() {
     } else {
       setGuestSessionId(null);
     }
-    setThreadId(null); // Reset threadId on user change
-    setMessages([]); // Optionally reset messages on user change
+    setThreadId(null);
+    setMessages([]);
   }, [userId]);
 
-  // Handler to send a message and stream the response
+  useEffect(() => {
+    if (threadId && !threads.some((t) => t._id === threadId)) {
+      setThreadId(null);
+      setMessages([]);
+    }
+  }, [threads, threadId]);
+
   const handleSend = async (content: string, model: string) => {
-    // Add user message
     const userMsg: Message = {
       id: Date.now().toString(),
       content,

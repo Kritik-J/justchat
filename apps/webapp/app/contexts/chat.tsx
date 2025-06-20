@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import type { ILLM } from "@justchat/database";
+import { toast } from "@justchat/ui/components/sonner";
 
 type Thread = {
   _id: string;
@@ -35,14 +36,32 @@ export const ChatProvider = ({
     setThreads((current) => [thread, ...current]);
   };
 
-  const updateThread = (threadId: string, updates: Partial<Thread>) => {
-    setThreads((current) =>
-      current.map((t) => (t._id === threadId ? { ...t, ...updates } : t))
-    );
+  const updateThread = async (threadId: string, updates: Partial<Thread>) => {
+    const res = await fetch("/chat/update-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ threadId, updates }),
+    });
+    if (res.ok) {
+      setThreads((current) =>
+        current.map((t) => (t._id === threadId ? { ...t, ...updates } : t))
+      );
+    } else {
+      toast.error("Failed to update thread");
+    }
   };
 
-  const removeThread = (threadId: string) => {
-    setThreads((current) => current.filter((t) => t._id !== threadId));
+  const removeThread = async (threadId: string) => {
+    const res = await fetch("/chat/delete-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ threadId }),
+    });
+    if (res.ok) {
+      setThreads((current) => current.filter((t) => t._id !== threadId));
+    } else {
+      toast.error("Failed to delete thread");
+    }
   };
 
   return (

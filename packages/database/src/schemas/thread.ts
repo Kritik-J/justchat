@@ -2,6 +2,7 @@ import mongoose, { Model, Schema } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import { IThread } from "../interfaces/thread";
 import commonSchema from "./common";
+import { MessageModel } from "./message";
 
 // Chat Schema
 const chatSchema = new Schema<IThread>({
@@ -20,6 +21,15 @@ const chatSchema = new Schema<IThread>({
 
 chatSchema.add(commonSchema);
 chatSchema.plugin(mongoosePaginate);
+
+// Add cascade delete for messages when a thread is deleted
+chatSchema.pre("findOneAndDelete", async function (next) {
+  const threadId = this.getQuery()["_id"];
+  if (threadId) {
+    await MessageModel.deleteMany({ thread: threadId });
+  }
+  next();
+});
 
 export const ThreadModel: Model<IThread> =
   mongoose.models.Chat || mongoose.model<IThread>("Thread", chatSchema);

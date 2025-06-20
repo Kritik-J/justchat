@@ -1,7 +1,11 @@
 import { ThreadModel, MessageModel } from "@justchat/database";
 import { streamGenerate } from "./llmProvider.server";
 import type { ChatCompletionMessageParam } from "openai/resources";
-import { logger } from "@justchat/logger";
+
+type Thread = {
+  _id: string;
+  title?: string;
+};
 
 class ChatService {
   async startThread(userId: string, title?: string) {
@@ -106,6 +110,18 @@ class ChatService {
     return MessageModel.findOne({ thread: threadId, role: "assistant" }).sort({
       created_at: -1,
     });
+  }
+
+  async deleteThread(threadId: string) {
+    await ThreadModel.findByIdAndDelete(threadId);
+  }
+
+  async getThread(threadId: string) {
+    return ThreadModel.findById(threadId);
+  }
+
+  async updateThread(threadId: string, updates: Partial<Thread>) {
+    await ThreadModel.findByIdAndUpdate(threadId, updates);
   }
 }
 
