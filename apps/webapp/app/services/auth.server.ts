@@ -94,7 +94,13 @@ class AuthService {
     const session = await getUserSession(request);
 
     if (session) {
-      await destroySession(session);
+      return {
+        success: true,
+        message: "User logged out",
+        headers: {
+          "Set-Cookie": await destroySession(session),
+        },
+      };
     }
 
     return {
