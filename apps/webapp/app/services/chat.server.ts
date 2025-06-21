@@ -1,6 +1,7 @@
 import { ThreadModel, MessageModel } from "@justchat/database";
 import { streamGenerate } from "./llmProvider.server";
 import type { ChatCompletionMessageParam } from "openai/resources";
+import { logger } from "@justchat/logger";
 
 type Thread = {
   _id: string;
@@ -8,19 +9,48 @@ type Thread = {
 };
 
 class ChatService {
-  async startThread(userId: string, title?: string) {
-    if (!userId) throw new Error("User ID is required");
+  async startThread(userId?: string, title?: string, guestSessionId?: string) {
+    if (!userId && !guestSessionId) {
+      throw new Error("Either userId or guestSessionId is required");
+    }
+
     const thread = await ThreadModel.create({
-      user: userId,
+      user: userId || null,
+      guestSessionId: userId ? undefined : guestSessionId,
       title: title || "New Chat",
+      model_name: "gemini",
+      is_active: true,
+      settings: {
+        temperature: 0.5,
+        max_tokens: 1000,
+        system_prompt: "",
+      },
+      metadata: {},
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     return thread;
   }
 
-  async listThreads(userId: string) {
-    return ThreadModel.find({ user: userId }).sort({ updatedAt: -1 });
+  async listThreads(userId?: string, guestSessionId?: string) {
+    if (guestSessionId && !userId) {
+      return ThreadModel.find({
+        guestSessionId,
+        is_active: true,
+      }).sort({ updatedAt: -1 });
+    }
+
+    if (!userId) {
+      return [];
+    }
+
+    return ThreadModel.find({ user: userId, is_active: true }).sort({
+      updatedAt: -1,
+    });
+  }
+
+  async getMessages(threadId: string, guestSessionId?: string) {
+    return MessageModel.find({ thread: threadId }).sort({ created_at: 1 });
   }
 
   async *sendMessage(
@@ -37,12 +67,13 @@ class ChatService {
     if (!assistantMsgId) {
       await MessageModel.create({
         thread: threadId,
-        user: userId || undefined,
         guestSessionId: userId ? undefined : guestSessionId,
         content,
         model_name: llm,
         role: "user",
+        metadata: {},
         createdAt: new Date(),
+        updatedAt: new Date(),
         attachments,
       });
     }
@@ -84,18 +115,15 @@ class ChatService {
     } else {
       await MessageModel.create({
         thread: threadId,
-        user: null,
         guestSessionId: userId ? undefined : guestSessionId,
         content: aiContent,
         model_name: llm,
         role: "assistant",
+        metadata: {},
         createdAt: new Date(),
+        updatedAt: new Date(),
       });
     }
-  }
-
-  async getMessages(threadId: string) {
-    return MessageModel.find({ thread: threadId }).sort({ created_at: 1 });
   }
 
   async uploadAttachment(file: File) {

@@ -3,7 +3,7 @@ import { TimeStamps } from "./common";
 import { IUser } from "./user";
 
 export interface IThread extends Document, TimeStamps {
-  user: Schema.Types.ObjectId | IUser;
+  user?: Schema.Types.ObjectId | IUser;
   title: string;
   model_name: string;
   is_active: boolean;

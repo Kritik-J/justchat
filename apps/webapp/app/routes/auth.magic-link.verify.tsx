@@ -14,6 +14,7 @@ import {
   commitSession,
   getUserSession,
 } from "~/services/sessionStorage.server";
+import { guestSessionService } from "~/services/guestSession.server";
 
 export default function Page({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigation();
@@ -43,12 +44,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const token = new URL(request.url).searchParams.get("token");
   const email = new URL(request.url).searchParams.get("email");
+  const guestSessionId = new URL(request.url).searchParams.get(
+    "guestSessionId"
+  );
 
   if (!token || !email) {
     return data({ success: false, message: "Invalid token or email", email });
   }
 
-  logger.info(token, email);
+  logger.info(token, email, guestSessionId);
 
   const { success, message, user } = await authService.verifyLogin(token);
 
@@ -57,6 +61,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (success) {
     const session = await getUserSession(request);
     session.set("userId", user._id);
+
+    // If there's a guest session ID, sync it during login
+    if (guestSessionId) {
+      try {
+        await guestSessionService.syncGuestToUser(guestSessionId, user._id);
+        logger.info("Guest session synced during login", {
+          guestSessionId,
+          userId: user._id,
+        });
+      } catch (error) {
+        logger.error("Failed to sync guest session during login", {
+          guestSessionId,
+          userId: user._id,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+        // Don't fail the login if sync fails
+      }
+    }
 
     throw redirect(appPath(), {
       headers: {

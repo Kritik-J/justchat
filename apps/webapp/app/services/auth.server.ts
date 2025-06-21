@@ -35,7 +35,7 @@ class AuthService {
     });
   }
 
-  async initiateLogin(email: string) {
+  async initiateLogin(email: string, guestSessionId?: string) {
     let user = await userService.findOne({ email });
 
     if (!user) {
@@ -50,12 +50,14 @@ class AuthService {
       expires_at: new Date(Date.now() + 10 * 60 * 1000),
     });
 
+    // Build magic link URL with guest session ID if provided
+    let magicLinkUrl = `${env.APP_URL}${magicLinkVerifyPath(token, email)}`;
+    if (guestSessionId) {
+      magicLinkUrl += `&guestSessionId=${guestSessionId}`;
+    }
+
     // TODO: Use queue and add rate limiter
-    await emailService.sendMagicLink(
-      email,
-      `${env.APP_URL}${magicLinkVerifyPath(token, email)}`,
-      "10"
-    );
+    await emailService.sendMagicLink(email, magicLinkUrl, "10");
 
     return {
       success: true,

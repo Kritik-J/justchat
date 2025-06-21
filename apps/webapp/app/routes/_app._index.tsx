@@ -5,6 +5,7 @@ import ChatList from "~/components/Chat/ChatList";
 import { useLoaderData } from "react-router";
 import { getUserSession } from "~/services/sessionStorage.server";
 import { useChat } from "~/contexts/chat";
+import { guestSessionClient } from "~/services/guestSession.client";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "JustChat" }, { name: "description", content: "JustChat" }];
@@ -36,12 +37,9 @@ export default function Page() {
 
   useEffect(() => {
     if (!userId) {
-      let guestId = localStorage.getItem("guestSessionId");
-      if (!guestId) {
-        guestId = crypto.randomUUID();
-        localStorage.setItem("guestSessionId", guestId);
-      }
-      setGuestSessionId(guestId);
+      // Use the guest session client
+      const sessionId = guestSessionClient.getGuestSessionId();
+      setGuestSessionId(sessionId);
     } else {
       setGuestSessionId(null);
     }
@@ -75,7 +73,8 @@ export default function Page() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: userId || "guest",
+          userId: userId || undefined,
+          guestSessionId: userId ? undefined : guestSessionId,
           title: content.slice(0, 40) || "New Chat",
         }),
       });
