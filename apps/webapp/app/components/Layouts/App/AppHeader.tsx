@@ -11,39 +11,74 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
 } from "@justchat/ui/components/dropdown-menu";
-import { LogOutIcon, PackageIcon, SettingsIcon } from "@justchat/ui/icons";
+import {
+  LogOutIcon,
+  PackageIcon,
+  SettingsIcon,
+  LogInIcon,
+} from "@justchat/ui/icons";
+import { useSubmit, useNavigate } from "react-router";
+import type { IUser } from "@justchat/database";
 
-export default function AppHeader() {
+interface AppHeaderProps {
+  user: IUser | null;
+}
+
+export default function AppHeader({ user }: AppHeaderProps) {
   const { open, isMobile } = useSidebar();
+  const submit = useSubmit();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await submit(null, { method: "post", action: "/auth/logout" });
+    navigate(0);
+  };
+
   return (
     <div className="h-12 flex items-center justify-between inset-x-0 px-4 bg-background sticky top-0 z-10">
       <div>{(!open || isMobile) && <SidebarTrigger />}</div>
 
       <div>
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Avatar className="size-7">
-              <AvatarFallback>K</AvatarFallback>
-              <AvatarImage src="https://github.com/Kritik-J.png" />
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <SettingsIcon className="w-4 h-4 mr-2" />
-              Settings
-            </DropdownMenuItem>
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Avatar className="size-7 cursor-pointer">
+                <AvatarFallback>
+                  {user.email.charAt(0).toUpperCase()}
+                </AvatarFallback>
+                <AvatarImage
+                  src={`https://github.com/${user.email.split("@")[0]}.png`}
+                />
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+              <DropdownMenuItem>
+                <SettingsIcon className="w-4 h-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
 
-            <DropdownMenuItem>
-              <PackageIcon className="w-4 h-4 mr-2" />
-              Upgrade to Pro
-            </DropdownMenuItem>
+              <DropdownMenuItem>
+                <PackageIcon className="w-4 h-4 mr-2" />
+                Upgrade to Pro
+              </DropdownMenuItem>
 
-            <DropdownMenuItem>
-              <LogOutIcon className="w-4 h-4 mr-2" />
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <div className="mt-2">
+            <a
+              href="/auth/magic-link"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              <LogInIcon className="w-4 h-4 mr-2" />
+              Login
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
