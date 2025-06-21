@@ -40,47 +40,6 @@ class GuestSessionClient {
   }
 
   /**
-   * Sync guest session to user account
-   */
-  async syncToUser(
-    userId: string
-  ): Promise<{ success: boolean; message: string; data?: any }> {
-    const sessionId = this.getGuestSessionId();
-
-    try {
-      const response = await fetch("/api/guest/sync", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          guestSessionId: sessionId,
-          userId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        // Clear guest session data after successful sync
-        this.clearGuestSession();
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error syncing guest session:", error);
-      return {
-        success: false,
-        message: "Failed to sync guest session",
-      };
-    }
-  }
-
-  /**
    * Clear guest session
    */
   clearGuestSession(): void {
