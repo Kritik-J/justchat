@@ -6,7 +6,7 @@ import { MessageModel } from "./message";
 
 // Chat Schema
 const chatSchema = new Schema<IThread>({
-  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: Schema.Types.ObjectId, ref: "User", required: false },
   title: { type: String, default: "" },
   model_name: { type: String, default: "gemini" },
   is_active: { type: Boolean, default: true },

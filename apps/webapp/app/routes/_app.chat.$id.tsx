@@ -8,6 +8,22 @@ import type { LoaderFunctionArgs } from "react-router";
 import { useChat } from "~/contexts/chat";
 import { redirect, useNavigate, useLocation } from "react-router";
 
+function getCookieValue(
+  cookieHeader: string | null,
+  name: string
+): string | null {
+  if (!cookieHeader) return null;
+
+  const cookies = cookieHeader.split(";");
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.trim().split("=");
+    if (cookieName === name) {
+      return cookieValue;
+    }
+  }
+  return null;
+}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const threadId = params.id;
   if (!threadId) throw new Response("Thread ID required", { status: 400 });
@@ -19,7 +35,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const session = await getUserSession(request);
   const userId = session.get("userId") as string | undefined;
+
+  // Get guest session ID from cookie if user is not logged in
   let guestSessionId: string | undefined = undefined;
+  if (!userId) {
+    const cookieHeader = request.headers.get("cookie");
+    const guestSessionIdFromCookie = getCookieValue(
+      cookieHeader,
+      "guestSessionId"
+    );
+    guestSessionId = guestSessionIdFromCookie || undefined;
+  }
 
   const messages = await chatService.getMessages(threadId);
   const formatted = messages.map((msg: any) => ({

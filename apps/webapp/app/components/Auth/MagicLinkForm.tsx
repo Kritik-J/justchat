@@ -14,6 +14,7 @@ import { Input } from "@justchat/ui/components/input";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { toast } from "@justchat/ui/components/sonner";
+import { guestSessionClient } from "~/services/guestSession.client";
 
 const FormSchema = z.object({
   email: z.string().email(),
@@ -35,7 +36,18 @@ export default function MagicLinkForm() {
   const actionData = useActionData();
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    submit(data, {
+    // Include guest session ID if available
+    const guestSessionId = guestSessionClient.hasGuestSession()
+      ? guestSessionClient.getGuestSessionId()
+      : undefined;
+
+    const formData = new FormData();
+    formData.append("email", data.email);
+    if (guestSessionId) {
+      formData.append("guestSessionId", guestSessionId);
+    }
+
+    submit(formData, {
       method: "post",
       action: "/auth/magic-link",
       preventScrollReset: true,

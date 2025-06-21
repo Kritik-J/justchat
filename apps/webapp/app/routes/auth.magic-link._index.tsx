@@ -28,8 +28,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const { success, message } = await authService.initiateLogin(email as string);
+  const email = formData.get("email") as string;
+  const guestSessionId = formData.get("guestSessionId") as string | null;
+
+  const { success, message } = await authService.initiateLogin(
+    email,
+    guestSessionId || undefined
+  );
 
   if (!success) {
     return data({ success: false, message });
