@@ -8,6 +8,7 @@ const EnvironmentSchema = z.object({
   MONGO_URI: z.string(),
   APP_URL: z.string(),
   GROQ_API_KEY: z.string(),
+  TAVILY_API_KEY: z.string(),
 });
 
 export type Environment = z.infer<typeof EnvironmentSchema>;

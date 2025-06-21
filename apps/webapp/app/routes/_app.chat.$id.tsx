@@ -104,13 +104,19 @@ export default function Page() {
   useEffect(() => {
     const initialMessage = location.state?.initialMessage;
     if (initialMessage && initialMessages.length === 0) {
-      handleSend(initialMessage.content, initialMessage.model);
+      handleSend(initialMessage.content, initialMessage.model, {
+        enableWebSearch: false,
+      });
       // Clear the state to prevent re-sending on refresh
       window.history.replaceState({}, document.title);
     }
   }, [location.state, initialMessages.length]);
 
-  const handleSend = async (content: string, model: string) => {
+  const handleSend = async (
+    content: string,
+    model: string,
+    options: { enableWebSearch: boolean }
+  ) => {
     const userMsg: Message = {
       _id: Date.now().toString(),
       id: Date.now().toString(),
@@ -141,6 +147,7 @@ export default function Page() {
         userId: userId || undefined,
         content,
         guestSessionId: userId ? undefined : guestSessionId,
+        enableWebSearch: options.enableWebSearch,
       }),
     });
 
@@ -210,6 +217,7 @@ export default function Page() {
           aiMessage && aiMessage._id !== "streaming"
             ? aiMessage._id
             : undefined,
+        enableWebSearch: false, // For retry, don't automatically enable web search
       }),
     });
 

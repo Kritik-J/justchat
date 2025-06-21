@@ -10,6 +10,7 @@ export async function action({ request }: ActionFunctionArgs) {
     settings,
     guestSessionId,
     assistantMsgId,
+    enableWebSearch,
   } = await request.json();
 
   const stream = new ReadableStream({
@@ -20,9 +21,10 @@ export async function action({ request }: ActionFunctionArgs) {
         content,
         model,
         settings || {},
-        [], // attachments (not implemented)
+        [],
         guestSessionId,
-        assistantMsgId
+        assistantMsgId,
+        enableWebSearch
       )) {
         controller.enqueue(token);
       }

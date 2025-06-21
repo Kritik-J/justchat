@@ -2,7 +2,7 @@ import { chatService } from "~/services/chat.server";
 import type { ActionFunctionArgs } from "react-router";
 
 export async function action({ request }: ActionFunctionArgs) {
-  const { userId, title, guestSessionId } = await request.json();
+  const { userId, title, guestSessionId, model } = await request.json();
 
   // Require either userId (for logged in users) or guestSessionId (for guests)
   if (!userId && !guestSessionId) {
@@ -14,7 +14,12 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
-  const thread = await chatService.startThread(userId, title, guestSessionId);
+  const thread = await chatService.startThread(
+    userId,
+    title,
+    guestSessionId,
+    model
+  );
   return new Response(JSON.stringify({ threadId: thread._id }), {
     headers: { "Content-Type": "application/json" },
   });

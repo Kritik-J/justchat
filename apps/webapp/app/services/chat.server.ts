@@ -1,7 +1,6 @@
 import { ThreadModel, MessageModel } from "@justchat/database";
-import { streamGenerate } from "./llmProvider.server";
+import { streamGenerateWithWebSearch } from "./llmProvider.server";
 import type { ChatCompletionMessageParam } from "openai/resources";
-import { logger } from "@justchat/logger";
 
 type Thread = {
   _id: string;
@@ -9,7 +8,12 @@ type Thread = {
 };
 
 class ChatService {
-  async startThread(userId?: string, title?: string, guestSessionId?: string) {
+  async startThread(
+    userId?: string,
+    title?: string,
+    guestSessionId?: string,
+    model: string = "gemini"
+  ) {
     if (!userId && !guestSessionId) {
       throw new Error("Either userId or guestSessionId is required");
     }
@@ -18,7 +22,7 @@ class ChatService {
       user: userId || null,
       guestSessionId: userId ? undefined : guestSessionId,
       title: title || "New Chat",
-      model_name: "gemini",
+      model_name: model,
       is_active: true,
       settings: {
         temperature: 0.5,
@@ -61,7 +65,8 @@ class ChatService {
     settings: Record<string, any> = {},
     attachments?: any[],
     guestSessionId?: string,
-    assistantMsgId?: string
+    assistantMsgId?: string,
+    enableWebSearch: boolean = false
   ): AsyncGenerator<string, void, unknown> {
     // Save user message only if not retrying an assistant message
     if (!assistantMsgId) {
@@ -101,7 +106,12 @@ class ChatService {
     }
 
     let aiContent = "";
-    for await (const chunk of streamGenerate(llm, history, settings)) {
+    for await (const chunk of streamGenerateWithWebSearch(
+      llm,
+      history,
+      settings,
+      enableWebSearch
+    )) {
       aiContent += chunk;
       yield chunk;
     }

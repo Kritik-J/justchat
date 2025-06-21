@@ -30,14 +30,13 @@ function isValidObjectId(id: string) {
 
 export default function Page() {
   const { userId } = useLoaderData() as { userId?: string };
-  const { addThread, models, threads } = useChat();
+  const { addThread, models, threads, activeModel } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) {
-      // Use the guest session client
       const sessionId = guestSessionClient.getGuestSessionId();
       setGuestSessionId(sessionId);
     } else {
@@ -54,7 +53,11 @@ export default function Page() {
     }
   }, [threads, threadId]);
 
-  const handleSend = async (content: string, model: string) => {
+  const handleSend = async (
+    content: string,
+    model: string,
+    options: { enableWebSearch: boolean }
+  ) => {
     const userMsg: Message = {
       id: Date.now().toString(),
       content,
@@ -76,6 +79,7 @@ export default function Page() {
           userId: userId || undefined,
           guestSessionId: userId ? undefined : guestSessionId,
           title: content.slice(0, 40) || "New Chat",
+          model: activeModel?.model_name!,
         }),
       });
       const data = await res.json();
@@ -102,6 +106,7 @@ export default function Page() {
         userId: userId || undefined,
         content,
         guestSessionId: userId ? undefined : guestSessionId,
+        enableWebSearch: options.enableWebSearch,
       }),
     });
 
@@ -170,6 +175,7 @@ export default function Page() {
         content: userMessage.content,
         guestSessionId: userId ? undefined : guestSessionId,
         assistantMsgId: aiMessage._id,
+        enableWebSearch: false, // For retry, don't automatically enable web search
       }),
     });
 

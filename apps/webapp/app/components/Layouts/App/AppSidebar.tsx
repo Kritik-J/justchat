@@ -68,8 +68,8 @@ export default function AppSidebar() {
                     No chats yet
                   </div>
                 )}
-                {threads.map((thread) => (
-                  <SidebarMenuItem key={thread._id}>
+                {threads.map((thread, index) => (
+                  <SidebarMenuItem key={index}>
                     <div className="flex items-center w-full">
                       <SidebarMenuButton asChild>
                         <Link
