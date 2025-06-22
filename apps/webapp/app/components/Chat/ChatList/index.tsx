@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ChatMessage from "../ChatMessage";
 
 interface Message {
@@ -18,17 +18,41 @@ export default function ChatList({
   onRetry,
   isShared,
 }: ChatListProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
+  const [prevMessagesLength, setPrevMessagesLength] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  // Wrap onRetry to track retry state
+  const handleRetry = async (messageIndex: number, model: string) => {
+    setIsRetrying(true);
+    try {
+      await onRetry(messageIndex, model);
+    } finally {
+      // Add a small delay before allowing auto-scroll again
+      // This prevents scroll during streaming updates after retry
+      setTimeout(() => {
+        setIsRetrying(false);
+      }, 500);
+    }
+  };
 
   useEffect(() => {
-    if (lastMessageRef.current) {
+    const messagesIncreased = messages.length > prevMessagesLength;
+
+    // Only auto-scroll if:
+    // 1. Messages length increased (new message added)
+    // 2. Not currently retrying a message
+    const shouldScroll = messagesIncreased && !isRetrying;
+
+    if (shouldScroll && lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+
+    setPrevMessagesLength(messages.length);
+  }, [messages.length, isRetrying, prevMessagesLength]);
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-2 p-4">
+    <div className="flex flex-col gap-2 p-4">
       {messages.map((message, idx) => (
         <div
           key={message.id}
@@ -36,7 +60,7 @@ export default function ChatList({
         >
           <ChatMessage
             message={message}
-            onRetry={(model) => onRetry(idx, model)}
+            onRetry={(model) => handleRetry(idx, model)}
             isShared={isShared}
           />
         </div>

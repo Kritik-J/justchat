@@ -13,9 +13,11 @@ export async function action({ request }: ActionFunctionArgs) {
     enableWebSearch,
   } = await request.json();
 
+  let actualMessageId = "";
+
   const stream = new ReadableStream({
     async start(controller) {
-      for await (const token of chatService.sendMessage(
+      const generator = chatService.sendMessage(
         threadId,
         userId,
         content,
@@ -25,21 +27,25 @@ export async function action({ request }: ActionFunctionArgs) {
         guestSessionId,
         assistantMsgId,
         enableWebSearch
-      )) {
-        controller.enqueue(token);
+      );
+
+      for await (const chunk of generator) {
+        if (typeof chunk === "string") {
+          controller.enqueue(chunk);
+        } else {
+          // This is the final return value with messageId
+          actualMessageId = (chunk as any).messageId;
+        }
       }
       controller.close();
     },
   });
 
-  // After streaming, get the latest assistant message for the thread
-  const latestMsg = await chatService.getLatestAssistantMessage(threadId);
-
   return new Response(stream, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Transfer-Encoding": "chunked",
-      "X-Assistant-Message-Id": latestMsg?._id?.toString() || "",
+      "X-Assistant-Message-Id": actualMessageId,
     },
   });
 }

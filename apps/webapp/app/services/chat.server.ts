@@ -68,7 +68,7 @@ class ChatService {
     guestSessionId?: string,
     assistantMsgId?: string,
     enableWebSearch: boolean = false
-  ): AsyncGenerator<string, void, unknown> {
+  ): AsyncGenerator<string, { messageId: string }, unknown> {
     // Save user message only if not retrying an assistant message
     if (!assistantMsgId) {
       await MessageModel.create({
@@ -117,14 +117,20 @@ class ChatService {
       yield chunk;
     }
 
+    let finalMessageId: string;
+
     if (assistantMsgId) {
+      console.log(`[RETRY] Updating existing message: ${assistantMsgId}`);
       await MessageModel.findByIdAndUpdate(assistantMsgId, {
         content: aiContent,
         model_name: llm,
         updatedAt: new Date(),
       });
+      finalMessageId = assistantMsgId;
+      console.log(`[RETRY] Updated message ID: ${finalMessageId}`);
     } else {
-      await MessageModel.create({
+      console.log(`[NEW] Creating new message for thread: ${threadId}`);
+      const newMessage = await MessageModel.create({
         thread: threadId,
         guestSessionId: userId ? undefined : guestSessionId,
         content: aiContent,
@@ -134,7 +140,11 @@ class ChatService {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
+      finalMessageId = (newMessage._id as any).toString();
+      console.log(`[NEW] Created message ID: ${finalMessageId}`);
     }
+
+    return { messageId: finalMessageId };
   }
 
   async uploadAttachment(file: File) {
