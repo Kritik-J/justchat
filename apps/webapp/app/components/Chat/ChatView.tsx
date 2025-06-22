@@ -206,11 +206,9 @@ export default function ChatView({
           isShared={isShared}
         />
       </div>
-      {!isShared && (
-        <div className="p-4 border-t">
-          <ChatInput onSend={handleSend} models={models} />
-        </div>
-      )}
+      <div className="p-4 border-t">
+        <ChatInput onSend={handleSend} models={models} isShared={isShared} />
+      </div>
     </div>
   );
 }
