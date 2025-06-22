@@ -2,9 +2,10 @@ import { createContext, useContext, useState } from "react";
 import type { ILLM } from "@justchat/database";
 import { toast } from "@justchat/ui/components/sonner";
 
-type Thread = {
+export type Thread = {
   _id: string;
   title?: string;
+  shareId?: string;
 };
 
 export const ChatContext = createContext({
@@ -16,6 +17,7 @@ export const ChatContext = createContext({
   addThread: (thread: Thread) => {},
   updateThread: (threadId: string, updates: Partial<Thread>) => {},
   removeThread: (threadId: string) => {},
+  shareThread: async (threadId: string): Promise<string | null> => null,
 });
 
 export const ChatProvider = ({
@@ -64,6 +66,24 @@ export const ChatProvider = ({
     }
   };
 
+  const shareThread = async (threadId: string): Promise<string | null> => {
+    const res = await fetch("/chat/share-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ threadId }),
+    });
+    if (res.ok) {
+      const { shareId } = await res.json();
+      setThreads((current) =>
+        current.map((t) => (t._id === threadId ? { ...t, shareId } : t))
+      );
+      return shareId;
+    } else {
+      toast.error("Failed to share thread");
+      return null;
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -75,6 +95,7 @@ export const ChatProvider = ({
         addThread,
         updateThread,
         removeThread,
+        shareThread,
       }}
     >
       {children}
