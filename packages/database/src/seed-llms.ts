@@ -4,10 +4,7 @@ import { LLMModel } from "./schemas/llm";
 
 const models = [
   { name: "Gemma 2 9B (Google)", model_name: "gemma2-9b-it" },
-  {
-    name: "Llama Guard 4 12B (Meta)",
-    model_name: "meta-llama/llama-guard-4-12b",
-  },
+  { name: "Qwen 3.2 32B (Qwen)", model_name: "qwen/qwen3-32b" },
   {
     name: "Llama 3.3 70B Versatile (Meta)",
     model_name: "llama-3.3-70b-versatile",
@@ -17,6 +14,8 @@ const models = [
 
 async function seed() {
   await mongoose.connect(process.env.MONGO_URI!);
+
+  await LLMModel.deleteMany({});
 
   for (const model of models) {
     await LLMModel.updateOne(
