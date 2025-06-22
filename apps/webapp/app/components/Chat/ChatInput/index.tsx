@@ -51,7 +51,7 @@ export default function ChatInput({
         className="w-full h-full resize-none text-sm border-none outline-none"
         placeholder={
           isShared
-            ? "This is a shared chat. You cannot send messages."
+            ? "This is a shared chat. You cannot send messages. Fork it to continue the conversation."
             : enableWebSearch
               ? "Ask me anything... (Web search enabled)"
               : "Ask me anything..."

@@ -18,6 +18,8 @@ export const ChatContext = createContext({
   updateThread: (threadId: string, updates: Partial<Thread>) => {},
   removeThread: (threadId: string) => {},
   shareThread: async (threadId: string): Promise<string | null> => null,
+  forkThread: async (shareId: string, title?: string): Promise<string | null> =>
+    null,
 });
 
 export const ChatProvider = ({
@@ -84,6 +86,32 @@ export const ChatProvider = ({
     }
   };
 
+  const forkThread = async (
+    shareId: string,
+    title?: string
+  ): Promise<string | null> => {
+    const res = await fetch("/chat/fork-thread", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shareId, title }),
+    });
+    if (res.ok) {
+      const { threadId } = await res.json();
+      // Add the new forked thread to the threads list
+      const newThread: Thread = {
+        _id: threadId,
+        title: title || "Forked Thread",
+      };
+      addThread(newThread);
+      toast.success("Thread forked successfully!");
+      return threadId;
+    } else {
+      const error = await res.json();
+      toast.error(error.error || "Failed to fork thread");
+      return null;
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -96,6 +124,7 @@ export const ChatProvider = ({
         updateThread,
         removeThread,
         shareThread,
+        forkThread,
       }}
     >
       {children}

@@ -181,6 +181,59 @@ class ChatService {
   async getThreadByShareId(shareId: string): Promise<IThread | null> {
     return ThreadModel.findOne({ shareId, is_active: true });
   }
+
+  async forkThread(
+    shareId: string,
+    userId?: string,
+    guestSessionId?: string,
+    title?: string
+  ): Promise<string> {
+    if (!userId && !guestSessionId) {
+      throw new Error("Either userId or guestSessionId is required");
+    }
+
+    // Get the shared thread
+    const sharedThread = await this.getThreadByShareId(shareId);
+    if (!sharedThread) {
+      throw new Error("Shared thread not found");
+    }
+
+    // Get all messages from the shared thread
+    const messages = await MessageModel.find({
+      thread: sharedThread._id,
+    }).sort({ created_at: 1 });
+
+    // Create new thread with similar settings but new ownership
+    const newThread = await ThreadModel.create({
+      user: userId || null,
+      guestSessionId: userId ? undefined : guestSessionId,
+      title: title || `${sharedThread.title} (forked)`,
+      model_name: sharedThread.model_name,
+      is_active: true,
+      settings: sharedThread.settings,
+      metadata: { ...sharedThread.metadata, forkedFrom: sharedThread._id },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    // Copy all messages to the new thread
+    if (messages.length > 0) {
+      const newMessages = messages.map((msg) => ({
+        thread: newThread._id,
+        guestSessionId: userId ? undefined : guestSessionId,
+        content: msg.content,
+        model_name: msg.model_name,
+        role: msg.role,
+        metadata: msg.metadata,
+        createdAt: msg.created_at,
+        updatedAt: new Date(),
+      }));
+
+      await MessageModel.insertMany(newMessages);
+    }
+
+    return newThread._id.toString();
+  }
 }
 
 export const chatService = new ChatService();

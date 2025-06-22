@@ -3,6 +3,15 @@ import ChatList from "~/components/Chat/ChatList";
 import ChatInput from "~/components/Chat/ChatInput";
 import { useChat } from "~/contexts/chat";
 import { useNavigate, useLocation } from "react-router";
+import { Button } from "@justchat/ui/components/button";
+import { GitFork } from "@justchat/ui/icons";
+import { toast } from "@justchat/ui/components/sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@justchat/ui/components/tooltip";
 
 type Message = {
   _id: string;
@@ -18,6 +27,8 @@ type ChatViewProps = {
   userId?: string;
   guestSessionId?: string;
   isShared?: boolean;
+  shareId?: string;
+  threadTitle?: string;
 };
 
 function isValidObjectId(id: string) {
@@ -30,8 +41,10 @@ export default function ChatView({
   userId,
   guestSessionId,
   isShared = false,
+  shareId,
+  threadTitle,
 }: ChatViewProps) {
-  const { updateThread, threads, models } = useChat();
+  const { updateThread, threads, models, forkThread } = useChat();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,6 +68,18 @@ export default function ChatView({
       window.history.replaceState({}, document.title);
     }
   }, [location.state, initialMessages.length]);
+
+  const handleFork = async () => {
+    if (!shareId) {
+      toast.error("Unable to fork: No share ID available");
+      return;
+    }
+
+    const newThreadId = await forkThread(shareId, threadTitle);
+    if (newThreadId) {
+      navigate(`/chat/${newThreadId}`);
+    }
+  };
 
   const handleSend = async (
     content: string,
@@ -206,6 +231,28 @@ export default function ChatView({
           isShared={isShared}
         />
       </div>
+      {isShared && (
+        <div className="flex justify-center mb-4">
+          <div className="flex items-center gap-3 p-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-700/50 rounded-full border border-gray-200 dark:border-gray-600 shadow-sm">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleFork}
+                    size="sm"
+                    className="h-8 w-8 p-0 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black shadow-md hover:shadow-lg transition-all duration-200 rounded-full border-0"
+                  >
+                    <GitFork />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Fork this chat to create your own copy</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      )}
       <div className="p-4 border-t">
         <ChatInput onSend={handleSend} models={models} isShared={isShared} />
       </div>

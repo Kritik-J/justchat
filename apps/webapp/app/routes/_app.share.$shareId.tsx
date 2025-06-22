@@ -29,17 +29,22 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return {
     messages: formatted,
     threadId: thread._id.toString(),
+    shareId,
+    threadTitle: thread.title,
     isShared: true,
   };
 }
 
 export default function SharedChatPage() {
-  const { messages, threadId, isShared } = useLoaderData<typeof loader>();
+  const { messages, threadId, shareId, threadTitle, isShared } =
+    useLoaderData<typeof loader>();
 
   return (
     <ChatView
       initialMessages={messages}
       threadId={threadId}
+      shareId={shareId}
+      threadTitle={threadTitle}
       isShared={isShared}
     />
   );
