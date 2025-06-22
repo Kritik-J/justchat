@@ -9,9 +9,11 @@ export default function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="grid grid-rows-[auto_1fr] w-full h-screen">
+      <main className="w-full h-screen flex flex-col">
         <AppHeader user={user} />
-        <Outlet />
+        <div className="flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
       </main>
     </SidebarProvider>
   );

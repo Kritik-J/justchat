@@ -8,12 +8,17 @@ interface ChatMessageProps {
     role: "user" | "assistant";
   };
   onRetry: (model: string) => Promise<void>;
+  isShared: boolean;
 }
 
-export default function ChatMessage({ message, onRetry }: ChatMessageProps) {
+export default function ChatMessage({
+  message,
+  onRetry,
+  isShared,
+}: ChatMessageProps) {
   if (message.role === "user") {
     return <UserMessage message={message} />;
   }
 
-  return <AIMessage message={message} onRetry={onRetry} />;
+  return <AIMessage message={message} onRetry={onRetry} isShared={isShared} />;
 }

@@ -165,6 +165,7 @@ function SourcesSection({ citations }: { citations: Citation[] }) {
 export default function AIMessage({
   message,
   onRetry,
+  isShared,
 }: {
   message: {
     id: string;
@@ -172,6 +173,7 @@ export default function AIMessage({
     role: "user" | "assistant";
   };
   onRetry: (model: string) => Promise<void>;
+  isShared: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -363,16 +365,23 @@ export default function AIMessage({
               </Select>
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => setShowModelSelect(true)}
-              disabled={isRetrying}
-            >
-              <RefreshCwIcon
-                className={`size-3 ${isRetrying ? "animate-spin" : ""}`}
-              />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => setShowModelSelect(true)}
+                    disabled={isRetrying || isShared}
+                  >
+                    <RefreshCwIcon
+                      className={`size-3.5 ${isRetrying ? "animate-spin" : ""}`}
+                    />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Retry with another model</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>
