@@ -45,7 +45,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!guestSessionId) {
         return new Response(
-          JSON.stringify({ error: "No guest session found" }),
+          JSON.stringify({
+            error: "No guest session found. Please refresh and try again.",
+          }),
           {
             status: 400,
             headers: { "Content-Type": "application/json" },

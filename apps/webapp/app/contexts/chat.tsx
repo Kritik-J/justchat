@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import type { ILLM } from "@justchat/database";
 import { toast } from "@justchat/ui/components/sonner";
+import { guestSessionClient } from "~/services/guestSession.client";
 
 export type Thread = {
   _id: string;
@@ -90,6 +91,11 @@ export const ChatProvider = ({
     shareId: string,
     title?: string
   ): Promise<string | null> => {
+    const hasGuestSession = guestSessionClient.hasGuestSession();
+    if (!hasGuestSession) {
+      guestSessionClient.getGuestSessionId();
+    }
+
     const res = await fetch("/chat/fork-thread", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
