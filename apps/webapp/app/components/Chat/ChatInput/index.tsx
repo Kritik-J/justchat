@@ -14,6 +14,7 @@ import { useChat } from "~/contexts/chat";
 export default function ChatInput({
   onSend,
   models,
+  isShared,
 }: {
   onSend: (
     input: string,
@@ -21,16 +22,16 @@ export default function ChatInput({
     options: { enableWebSearch: boolean }
   ) => void;
   models: ILLM[];
+  isShared?: boolean;
 }) {
   const { activeModel, setActiveModel } = useChat();
   const [input, setInput] = useState("");
   const [enableWebSearch, setEnableWebSearch] = useState(false);
 
   const handleSend = () => {
-    if (input.trim()) {
-      onSend(input, activeModel?.model_name!, { enableWebSearch });
-      setInput("");
-    }
+    if (isShared || !input.trim()) return;
+    onSend(input, activeModel?.model_name!, { enableWebSearch });
+    setInput("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -49,17 +50,20 @@ export default function ChatInput({
       <textarea
         className="w-full h-full resize-none text-sm border-none outline-none"
         placeholder={
-          enableWebSearch
-            ? "Ask me anything... (Web search enabled)"
-            : "Ask me anything..."
+          isShared
+            ? "This is a shared chat. You cannot send messages."
+            : enableWebSearch
+              ? "Ask me anything... (Web search enabled)"
+              : "Ask me anything..."
         }
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
+        disabled={isShared}
       />
 
       {/* Web search indicator */}
-      {enableWebSearch && (
+      {enableWebSearch && !isShared && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded">
           <Search className="size-3" />
           <span>Web search enabled</span>
@@ -73,6 +77,7 @@ export default function ChatInput({
             onValueChange={(value) =>
               setActiveModel(models.find((m) => m.model_name === value)!)
             }
+            disabled={isShared}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select a model" />
@@ -98,15 +103,16 @@ export default function ChatInput({
                 : ""
             }
             title={enableWebSearch ? "Disable web search" : "Enable web search"}
+            disabled={isShared}
           >
             <Globe
               className={`size-4 ${enableWebSearch ? "text-blue-600 dark:text-blue-400" : ""}`}
             />
           </Button>
-          <Button variant="outline" size="icon-sm">
+          <Button variant="outline" size="icon-sm" disabled={isShared}>
             <Paperclip className="size-4" />
           </Button>
-          <Button size="sm" onClick={handleSend}>
+          <Button size="sm" onClick={handleSend} disabled={isShared}>
             <SendIcon className="size-4" />
           </Button>
         </div>

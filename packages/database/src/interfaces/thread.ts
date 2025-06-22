@@ -3,6 +3,7 @@ import { TimeStamps } from "./common";
 import { IUser } from "./user";
 
 export interface IThread extends Document, TimeStamps {
+  _id: string;
   user?: Schema.Types.ObjectId | IUser;
   title: string;
   model_name: string;
@@ -14,4 +15,5 @@ export interface IThread extends Document, TimeStamps {
   };
   metadata: Record<string, any>;
   guestSessionId?: string;
+  shareId?: string;
 }

@@ -10,9 +10,14 @@ interface Message {
 interface ChatListProps {
   messages: Message[];
   onRetry: (messageIndex: number, model: string) => Promise<void>;
+  isShared: boolean;
 }
 
-export default function ChatList({ messages, onRetry }: ChatListProps) {
+export default function ChatList({
+  messages,
+  onRetry,
+  isShared,
+}: ChatListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<HTMLDivElement>(null);
 
@@ -23,10 +28,7 @@ export default function ChatList({ messages, onRetry }: ChatListProps) {
   }, [messages]);
 
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col gap-2 h-full overflow-y-auto"
-    >
+    <div ref={containerRef} className="flex flex-col gap-2 p-4">
       {messages.map((message, idx) => (
         <div
           key={message.id}
@@ -35,6 +37,7 @@ export default function ChatList({ messages, onRetry }: ChatListProps) {
           <ChatMessage
             message={message}
             onRetry={(model) => onRetry(idx, model)}
+            isShared={isShared}
           />
         </div>
       ))}

@@ -1,6 +1,7 @@
-import { ThreadModel, MessageModel } from "@justchat/database";
+import { ThreadModel, MessageModel, type IThread } from "@justchat/database";
 import { streamGenerateWithWebSearch } from "./llmProvider.server";
 import type { ChatCompletionMessageParam } from "openai/resources";
+import { generateShareId } from "~/utils/shareUtils";
 
 type Thread = {
   _id: string;
@@ -160,6 +161,25 @@ class ChatService {
 
   async updateThread(threadId: string, updates: Partial<Thread>) {
     await ThreadModel.findByIdAndUpdate(threadId, updates);
+  }
+
+  async shareThread(threadId: string): Promise<string> {
+    const thread = await ThreadModel.findById(threadId);
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+
+    // Generate unique share ID
+    const shareId = generateShareId();
+
+    // Update thread with share ID
+    await ThreadModel.findByIdAndUpdate(threadId, { shareId });
+
+    return shareId;
+  }
+
+  async getThreadByShareId(shareId: string): Promise<IThread | null> {
+    return ThreadModel.findOne({ shareId, is_active: true });
   }
 }
 
