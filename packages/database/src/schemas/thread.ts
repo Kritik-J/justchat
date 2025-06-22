@@ -17,10 +17,14 @@ const chatSchema = new Schema<IThread>({
   },
   metadata: { type: Object, default: {} },
   guestSessionId: { type: String, required: false },
+  shareId: { type: String, required: false, unique: true, sparse: true },
 });
 
 chatSchema.add(commonSchema);
 chatSchema.plugin(mongoosePaginate);
+
+// Create index for shareId for fast lookups
+chatSchema.index({ shareId: 1 });
 
 // Add cascade delete for messages when a thread is deleted
 chatSchema.pre("findOneAndDelete", async function (next) {

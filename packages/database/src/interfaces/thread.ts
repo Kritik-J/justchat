@@ -14,4 +14,5 @@ export interface IThread extends Document, TimeStamps {
   };
   metadata: Record<string, any>;
   guestSessionId?: string;
+  shareId?: string;
 }

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { chatService } from "~/services/chat.server";
 import ChatList from "~/components/Chat/ChatList";
 import ChatInput from "~/components/Chat/ChatInput";
+import { ShareButton } from "~/components/ShareButton";
 import { getUserSession } from "~/services/sessionStorage.server";
 import type { LoaderFunctionArgs } from "react-router";
 import { useChat } from "~/contexts/chat";
@@ -255,6 +256,12 @@ export default function Page() {
   };
   return (
     <div className="flex flex-col h-full w-full">
+      {/* Share Button Header */}
+      <div className="flex items-center justify-between p-4 border-b bg-background">
+        <h2 className="text-lg font-semibold">Chat</h2>
+        <ShareButton threadId={threadId} />
+      </div>
+
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
         <ChatList messages={messages} onRetry={handleRetry} />
       </div>
