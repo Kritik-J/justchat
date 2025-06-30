@@ -1,3 +1,4 @@
+import { logger } from "@justchat/logger";
 import type { ActionFunctionArgs } from "react-router";
 import { chatService } from "~/services/chat.server";
 
@@ -11,6 +12,7 @@ export async function action({ request }: ActionFunctionArgs) {
     guestSessionId,
     assistantMsgId,
     enableWebSearch,
+    enableRAG,
   } = await request.json();
 
   const stream = new ReadableStream({
@@ -24,7 +26,8 @@ export async function action({ request }: ActionFunctionArgs) {
         [],
         guestSessionId,
         assistantMsgId,
-        enableWebSearch
+        enableWebSearch,
+        enableRAG
       )) {
         controller.enqueue(token);
       }

@@ -56,7 +56,7 @@ export default function Page() {
   const handleSend = async (
     content: string,
     model: string,
-    options: { enableWebSearch: boolean }
+    options: { enableWebSearch: boolean; enableRAG: boolean }
   ) => {
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -107,6 +107,7 @@ export default function Page() {
         content,
         guestSessionId: userId ? undefined : guestSessionId,
         enableWebSearch: options.enableWebSearch,
+        enableRAG: options.enableRAG,
       }),
     });
 
@@ -215,7 +216,7 @@ export default function Page() {
   return (
     <div className="flex flex-col h-full w-full">
       <div className="flex-1 min-h-0 w-full overflow-y-auto pb-12 px-4">
-        <ChatList messages={messages} onRetry={handleRetry} />
+        <ChatList messages={messages} onRetry={handleRetry} isShared={false} />
       </div>
 
       <div className="sticky bottom-0 bg-background w-full z-10 p-4">

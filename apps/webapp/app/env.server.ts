@@ -9,6 +9,8 @@ const EnvironmentSchema = z.object({
   APP_URL: z.string(),
   GROQ_API_KEY: z.string(),
   TAVILY_API_KEY: z.string(),
+  CONVEX_URL: z.string(),
+  OPENAI_API_KEY: z.string().optional(), // Optional since embeddings are configurable
 });
 
 export type Environment = z.infer<typeof EnvironmentSchema>;
