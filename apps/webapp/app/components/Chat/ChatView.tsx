@@ -64,6 +64,7 @@ export default function ChatView({
     if (initialMessage && initialMessages.length === 0) {
       handleSend(initialMessage.content, initialMessage.model, {
         enableWebSearch: false,
+        enableRAG: false,
       });
       window.history.replaceState({}, document.title);
     }
@@ -84,7 +85,7 @@ export default function ChatView({
   const handleSend = async (
     content: string,
     model: string,
-    options: { enableWebSearch: boolean }
+    options: { enableWebSearch: boolean; enableRAG: boolean }
   ) => {
     if (isShared) return;
 
@@ -118,6 +119,7 @@ export default function ChatView({
         content,
         guestSessionId: userId ? undefined : guestSessionId,
         enableWebSearch: options.enableWebSearch,
+        enableRAG: options.enableRAG,
       }),
     });
 

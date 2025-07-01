@@ -2,6 +2,7 @@ import { ThreadModel, MessageModel, type IThread } from "@justchat/database";
 import { streamGenerateWithWebSearch } from "./llmProvider.server";
 import type { ChatCompletionMessageParam } from "openai/resources";
 import { generateShareId } from "~/utils/shareUtils";
+import { logger } from "@justchat/logger";
 
 type Thread = {
   _id: string;
@@ -67,8 +68,11 @@ class ChatService {
     attachments?: any[],
     guestSessionId?: string,
     assistantMsgId?: string,
-    enableWebSearch: boolean = false
-  ): AsyncGenerator<string, { messageId: string }, unknown> {
+    enableWebSearch: boolean = false,
+    enableRAG: boolean = false
+  ): AsyncGenerator<string, void, unknown> {
+    logger.info(`enable rag: ${enableRAG}`);
+    console.log(`enable rag: ${enableRAG} ${userId}`);
     // Save user message only if not retrying an assistant message
     if (!assistantMsgId) {
       await MessageModel.create({
@@ -106,6 +110,44 @@ class ChatService {
       history.push({ role: "user", content });
     }
 
+    // Add RAG context if enabled
+    let ragContext = "";
+    let ragSources: Array<{ fileId: string; filename: string; score: number }> =
+      [];
+    if (enableRAG && userId) {
+      console.log(`rag search...`);
+      try {
+        const { fileService } = await import("./file.server");
+
+        const ragResults = await fileService.searchForRAG(content, {
+          maxResults: 5,
+          scoreThreshold: 0.3, // Lower threshold to find more results
+          userId,
+        });
+
+        console.dir(ragResults, { depth: null });
+
+        if (ragResults.context) {
+          ragContext = ragResults.context;
+          ragSources = ragResults.sources;
+
+          logger.info("RAG search results:", {
+            context: ragContext,
+            sources: ragSources,
+          });
+          // Prepend context to the conversation
+          const contextMessage: ChatCompletionMessageParam = {
+            role: "system",
+            content: `Context from user's uploaded documents:\n\n${ragContext}\n\nPlease use this context to help answer the user's question when relevant. If you reference information from these sources, mention the source number (e.g., "According to Source 1").`,
+          };
+          history.splice(-1, 0, contextMessage); // Insert before the last user message
+        }
+      } catch (error) {
+        console.error("RAG search failed:", error);
+        // Continue without RAG if it fails
+      }
+    }
+
     let aiContent = "";
     for await (const chunk of streamGenerateWithWebSearch(
       llm,
@@ -117,7 +159,18 @@ class ChatService {
       yield chunk;
     }
 
-    let finalMessageId: string;
+    // If RAG was used, append source information to the response
+    if (ragSources.length > 0) {
+      const sourceInfo =
+        "\n\n**Sources:**\n" +
+        ragSources
+          .map(
+            (source, index) =>
+              `${index + 1}. ${source.filename} (relevance: ${(source.score * 100).toFixed(1)}%)`
+          )
+          .join("\n");
+      aiContent += sourceInfo;
+    }
 
     if (assistantMsgId) {
       console.log(`[RETRY] Updating existing message: ${assistantMsgId}`);
@@ -147,8 +200,9 @@ class ChatService {
     return { messageId: finalMessageId };
   }
 
-  async uploadAttachment(file: File) {
-    throw new Error("Not implemented");
+  async uploadAttachment(file: File, userId?: string) {
+    const { fileService } = await import("./file.server");
+    return await fileService.uploadFile(file, userId);
   }
 
   async branchThread(threadId: string, userId: string, branchName: string) {

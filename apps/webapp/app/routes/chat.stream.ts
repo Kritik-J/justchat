@@ -1,3 +1,4 @@
+import { logger } from "@justchat/logger";
 import type { ActionFunctionArgs } from "react-router";
 import { chatService } from "~/services/chat.server";
 
@@ -11,6 +12,7 @@ export async function action({ request }: ActionFunctionArgs) {
     guestSessionId,
     assistantMsgId,
     enableWebSearch,
+    enableRAG,
   } = await request.json();
 
   let actualMessageId = "";
@@ -26,16 +28,10 @@ export async function action({ request }: ActionFunctionArgs) {
         [],
         guestSessionId,
         assistantMsgId,
-        enableWebSearch
-      );
-
-      for await (const chunk of generator) {
-        if (typeof chunk === "string") {
-          controller.enqueue(chunk);
-        } else {
-          // This is the final return value with messageId
-          actualMessageId = (chunk as any).messageId;
-        }
+        enableWebSearch,
+        enableRAG
+      )) {
+        controller.enqueue(token);
       }
       controller.close();
     },
